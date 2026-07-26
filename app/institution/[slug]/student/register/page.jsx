@@ -409,10 +409,12 @@ function StudentRegisterContent() {
             <div className="flex flex-col md:flex-row items-center gap-6 p-4 rounded-2xl bg-amber-50 border border-amber-200">
               {/* QR Code Container */}
               <div className="p-4 bg-white rounded-2xl shadow-sm flex flex-col items-center flex-shrink-0 border border-slate-200">
-                <div className="w-44 h-44 bg-slate-900 rounded-xl p-3 flex flex-col items-center justify-center border-2 border-dashed border-amber-500 text-center relative overflow-hidden">
-                  <QrCode className="w-24 h-24 text-amber-400 mb-1" />
-                  <span className="text-[10px] font-mono text-amber-300 font-bold">SCAN TO PAY ₹50</span>
-                  <span className="text-[9px] text-slate-300">{institution?.code} WEB PAY</span>
+                <div className="w-44 h-44 rounded-xl overflow-hidden border-2 border-amber-500 shadow-sm bg-white flex items-center justify-center">
+                  <img 
+                    src="/qr-payment.png" 
+                    alt="Scan to Pay ₹50 QR Code" 
+                    className="w-full h-full object-contain" 
+                  />
                 </div>
                 <div className="mt-2 flex items-center space-x-1.5 text-[11px] text-slate-800 font-bold font-mono">
                   <span>{upiId}</span>
