@@ -24,7 +24,7 @@ import {
   Info
 } from 'lucide-react';
 import { getInstitutions } from '@/lib/institutionsStore';
-import { registerStudent } from '@/lib/studentsStore';
+import { registerStudent, findStudentByEmail } from '@/lib/studentsStore';
 
 function StudentRegisterContent() {
   const params = useParams();
@@ -114,6 +114,12 @@ function StudentRegisterContent() {
     if (!formData.email.trim()) return setErrorMessage('Email ID is required.');
     if (!formData.studentClass.trim()) return setErrorMessage('Class is required.');
     if (!formData.section.trim()) return setErrorMessage('Section is required.');
+
+    // Check if the Email ID exists in the institution database
+    const existingStudent = findStudentByEmail(slug, formData.email);
+    if (!existingStudent) {
+      return setErrorMessage(`Email ID "${formData.email}" is not registered in the institution database. Registration is restricted to registered student Email IDs only (e.g. aarav.sharma1@bmsce.edu.in).`);
+    }
     
     // Strict Password Validation
     const pwdErr = validatePasswordRequirements(formData.password);
