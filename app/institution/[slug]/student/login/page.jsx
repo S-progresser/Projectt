@@ -105,19 +105,7 @@ function StudentLoginContent() {
 
       {/* Card */}
       <div className="bg-white rounded-2xl p-6 md:p-8 border border-slate-200 shadow-sm relative">
-        <div className="mb-5 p-3 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs text-amber-900 font-medium">
-          <div className="flex items-center space-x-2">
-            <KeyRound className="w-4 h-4 text-amber-600 flex-shrink-0" />
-            <span>Demo Credentials</span>
-          </div>
-          <button
-            type="button"
-            onClick={autoFillCredentials}
-            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-medium text-[11px] rounded-md transition-all shadow-sm"
-          >
-            Auto-fill
-          </button>
-        </div>
+
 
         {errorMessage && (
           <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start space-x-2">

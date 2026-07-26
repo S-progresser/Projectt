@@ -91,20 +91,7 @@ function LoginFormContent() {
 
       {/* Form Panel */}
       <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm relative">
-        {/* Master Credentials Quick Auto-fill Banner */}
-        <div className="mb-6 p-3 rounded-xl bg-indigo-50 border border-indigo-200 flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-2 text-indigo-800 font-medium">
-            <KeyRound className="w-4 h-4 text-indigo-600 flex-shrink-0" />
-            <span>Demo Master Account</span>
-          </div>
-          <button
-            type="button"
-            onClick={fillMasterCredentials}
-            className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md font-medium text-[11px] transition-all shadow-sm"
-          >
-            Auto-fill
-          </button>
-        </div>
+
 
         {errorMessage && (
           <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start space-x-2">

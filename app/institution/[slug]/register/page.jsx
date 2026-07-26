@@ -155,13 +155,6 @@ function RegisterFormContent() {
             <ShieldCheck className="w-4 h-4 text-emerald-600 flex-shrink-0" />
             <span>Institutional Data Isolation Active</span>
           </div>
-          <button
-            type="button"
-            onClick={fillDemoTeacher}
-            className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-[11px] rounded-md transition-all shadow-sm"
-          >
-            Auto-fill Sample
-          </button>
         </div>
 
         {errorMessage && (

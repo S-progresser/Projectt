@@ -177,22 +177,7 @@ function InstitutionLoginContent() {
           </button>
         </div>
 
-        {/* Auto-fill Helper Banner */}
-        <div className="mb-5 p-3 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-between text-xs text-teal-900 font-medium">
-          <div className="flex items-center space-x-2">
-            <KeyRound className="w-4 h-4 text-teal-600 flex-shrink-0" />
-            <span>
-              {activeTab === 'ADMIN' ? 'Demo Admin Pass' : 'Demo Faculty Login'}
-            </span>
-          </div>
-          <button
-            type="button"
-            onClick={autoFillCredentials}
-            className="px-2.5 py-1 bg-teal-600 hover:bg-teal-700 text-white font-medium text-[11px] rounded-md transition-all shadow-sm"
-          >
-            Auto-fill
-          </button>
-        </div>
+
 
         {errorMessage && (
           <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start space-x-2">

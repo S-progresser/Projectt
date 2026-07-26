@@ -227,13 +227,6 @@ function StudentRegisterContent() {
             <ShieldCheck className="w-4 h-4 text-amber-600 flex-shrink-0" />
             <span>Student Registration Engine</span>
           </div>
-          <button
-            type="button"
-            onClick={fillDemoStudent}
-            className="px-2.5 py-1 bg-amber-600 hover:bg-amber-700 text-white font-medium text-[11px] rounded-md transition-all shadow-sm"
-          >
-            Auto-fill Sample
-          </button>
         </div>
 
         {errorMessage && (
@@ -477,7 +470,7 @@ function StudentRegisterContent() {
               {/* Instant Auto-Verification Toggle */}
               <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
                 <div className="space-y-0.5">
-                  <span className="font-semibold text-slate-900">Instant Payment Verification (Demo)</span>
+                  <span className="font-semibold text-slate-900">Instant Payment Verification</span>
                   <p className="text-[10px] text-slate-500">Instantly activate student portal upon submitting UTR.</p>
                 </div>
                 <input
