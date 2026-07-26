@@ -21,7 +21,6 @@ import {
   Users,
   Lock,
   Info,
-  KeyRound,
   Send,
   CheckCheck
 } from 'lucide-react';
@@ -34,7 +33,7 @@ function StudentRegisterContent() {
   const slug = params?.slug || 'bmsce';
 
   const [institution, setInstitution] = useState(null);
-  const [step, setStep] = useState(1); // 1: Registration Form & OTP, 2: ₹50 QR Fee
+  const [step, setStep] = useState(1); // 1: Profile & OTP & Password Setup, 2: ₹50 QR Fee
 
   const [formData, setFormData] = useState({
     name: '',
@@ -50,8 +49,12 @@ function StudentRegisterContent() {
     autoApprove: true
   });
 
-  // OTP Verification States
-  const [otpSent, setOtpSent] = useState(false);
+  // Sequential Step 1 States:
+  // subStep 1: Fill Name, Email, Class, Section -> Send OTP
+  // subStep 2: Enter & Verify 6-digit OTP
+  // subStep 3: Setup Password & Confirm Password (Unlocked after OTP verified)
+  const [subStep, setSubStep] = useState(1);
+
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [userEnteredOtp, setUserEnteredOtp] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -96,34 +99,30 @@ function StudentRegisterContent() {
     return null;
   };
 
-  const handleSendOtp = () => {
+  // Phase 1: Send OTP to Email
+  const handleSendOtp = (e) => {
+    e.preventDefault();
     setErrorMessage('');
     setOtpError('');
 
     if (!formData.name.trim()) return setErrorMessage('Full Name is required.');
     if (!formData.email.trim()) return setErrorMessage('Email ID is required.');
     if (!/\S+@\S+\.\S+/.test(formData.email)) return setErrorMessage('Please enter a valid Email ID.');
-
-    // Strict Password Validation
-    const pwdErr = validatePasswordRequirements(formData.password);
-    if (pwdErr) {
-      return setErrorMessage(pwdErr);
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      return setErrorMessage('Passwords do not match.');
-    }
+    if (!formData.studentClass.trim()) return setErrorMessage('Class is required.');
+    if (!formData.section.trim()) return setErrorMessage('Section is required.');
 
     // Generate 6-digit random OTP
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(code);
-    setOtpSent(true);
-    setSuccessMessage(`OTP Sent successfully to ${formData.email}`);
+    setSubStep(2);
+    setSuccessMessage(`OTP Code sent to ${formData.email}`);
   };
 
+  // Phase 2: Verify OTP Code
   const handleVerifyOtp = (e) => {
     e.preventDefault();
     setOtpError('');
+    setErrorMessage('');
 
     if (!userEnteredOtp.trim()) {
       return setOtpError('Please enter the 6-digit OTP code sent to your email.');
@@ -134,7 +133,23 @@ function StudentRegisterContent() {
     }
 
     setIsEmailVerified(true);
-    setSuccessMessage(`Email ${formData.email} verified successfully!`);
+    setSubStep(3); // Unlock Password Setup Phase
+    setSuccessMessage(`Email ${formData.email} verified! Please set up your password.`);
+  };
+
+  // Phase 3: Set Password & Proceed to ₹50 Fee
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    setErrorMessage('');
+
+    const pwdErr = validatePasswordRequirements(formData.password);
+    if (pwdErr) {
+      return setErrorMessage(pwdErr);
+    }
+
+    if (formData.password !== formData.confirmPassword) {
+      return setErrorMessage('Passwords do not match.');
+    }
 
     if (!formData.rollNo) {
       setFormData(prev => ({
@@ -144,15 +159,6 @@ function StudentRegisterContent() {
     }
 
     setStep(2);
-  };
-
-  const handleStep1Next = (e) => {
-    e.preventDefault();
-    if (!isEmailVerified) {
-      handleSendOtp();
-    } else {
-      setStep(2);
-    }
   };
 
   const handlePaymentSubmit = async (e) => {
@@ -234,7 +240,7 @@ function StudentRegisterContent() {
           }`}>
             1
           </div>
-          <span>1. Registration & Email OTP</span>
+          <span>1. Profile, OTP & Password</span>
         </div>
 
         <div className={`p-3 rounded-xl border flex items-center space-x-2 transition-all ${
@@ -256,7 +262,7 @@ function StudentRegisterContent() {
         <div className="mb-6 p-3.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between text-xs text-amber-900 font-medium">
           <div className="flex items-center space-x-2">
             <ShieldCheck className="w-4 h-4 text-amber-600 flex-shrink-0" />
-            <span>Student Registration & Email OTP Engine</span>
+            <span>Student Registration Engine</span>
           </div>
         </div>
 
@@ -274,215 +280,249 @@ function StudentRegisterContent() {
           </div>
         )}
 
-        {/* STEP 1: INITIAL REGISTRATION FORM */}
+        {/* STEP 1 */}
         {step === 1 && (
-          <form onSubmit={handleStep1Next} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-              {/* Full Name */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <User className="w-4 h-4" />
-                  </div>
-                  <input
-                    type="text"
-                    required
-                    value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    placeholder="Sudeep"
-                    className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-              </div>
+          <div className="space-y-6">
 
-              {/* Email ID */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Email ID <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Mail className="w-4 h-4" />
+            {/* PHASE 1: FILL DETAILS & SEND OTP */}
+            {subStep === 1 && (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  {/* Full Name */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <User className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={formData.name}
+                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                        placeholder="Sudeep"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
                   </div>
-                  <input
-                    type="email"
-                    required
-                    disabled={isEmailVerified || otpSent}
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    placeholder="sudeep@gmail.com"
-                    className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:bg-slate-100"
-                  />
-                  {isEmailVerified && (
-                    <div className="absolute inset-y-0 right-0 pr-3 flex items-center text-emerald-600 font-bold text-[10px]">
-                      Verified ✅
+
+                  {/* Email ID */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Email ID <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Mail className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="email"
+                        required
+                        value={formData.email}
+                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                        placeholder="sudeep@gmail.com"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Class Dropdown */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Class <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <BookOpen className="w-4 h-4" />
+                      </div>
+                      <select
+                        value={formData.studentClass}
+                        onChange={(e) => setFormData({ ...formData, studentClass: e.target.value })}
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                      >
+                        <option value="Class 6">Class 6</option>
+                        <option value="Class 7">Class 7</option>
+                        <option value="Class 8">Class 8</option>
+                        <option value="Class 9">Class 9</option>
+                        <option value="Class 10">Class 10</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Section Dropdown */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Section <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Users className="w-4 h-4" />
+                      </div>
+                      <select
+                        value={formData.section}
+                        onChange={(e) => setFormData({ ...formData, section: e.target.value })}
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                      >
+                        <option value="Section A">Section A</option>
+                        <option value="Section B">Section B</option>
+                        <option value="Section C">Section C</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center justify-center space-x-2 transition-all mt-4"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Send OTP Code to Email ({formData.email || 'Email ID'})</span>
+                </button>
+              </form>
+            )}
+
+            {/* PHASE 2: VERIFY OTP CODE */}
+            {subStep === 2 && (
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="p-5 rounded-2xl bg-indigo-50 border-2 border-indigo-200 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2 text-indigo-900 font-bold text-xs">
+                      <Mail className="w-4 h-4 text-indigo-600" />
+                      <span>OTP Sent to {formData.email}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setUserEnteredOtp(generatedOtp)}
+                      className="text-[10px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded hover:bg-indigo-200"
+                    >
+                      Auto-fill OTP ({generatedOtp})
+                    </button>
+                  </div>
+
+                  <div className="text-xs text-slate-600">
+                    Enter the 6-digit OTP code sent to <strong>{formData.email}</strong> to verify your email before setting up your password:
+                  </div>
+
+                  {otpError && (
+                    <div className="p-2.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-semibold">
+                      {otpError}
                     </div>
                   )}
-                </div>
-              </div>
 
-              {/* Class Dropdown */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Class <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <BookOpen className="w-4 h-4" />
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      maxLength={6}
+                      value={userEnteredOtp}
+                      onChange={(e) => setUserEnteredOtp(e.target.value)}
+                      placeholder="Enter 6-digit OTP (e.g. 582914)"
+                      className="w-full px-4 py-3 text-base font-mono font-bold tracking-widest text-center rounded-xl border border-indigo-300 bg-white text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                    />
+
+                    <div className="flex items-center space-x-3">
+                      <button
+                        type="button"
+                        onClick={() => setSubStep(1)}
+                        className="px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-xl"
+                      >
+                        Edit Profile / Email
+                      </button>
+
+                      <button
+                        type="submit"
+                        className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center justify-center space-x-1.5 transition-all"
+                      >
+                        <CheckCheck className="w-4 h-4" />
+                        <span>Verify OTP & Unlock Password Setup</span>
+                      </button>
+                    </div>
                   </div>
-                  <select
-                    value={formData.studentClass}
-                    onChange={(e) => setFormData({ ...formData, studentClass: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
-                  >
-                    <option value="Class 6">Class 6</option>
-                    <option value="Class 7">Class 7</option>
-                    <option value="Class 8">Class 8</option>
-                    <option value="Class 9">Class 9</option>
-                    <option value="Class 10">Class 10</option>
-                  </select>
                 </div>
-              </div>
-
-              {/* Section Dropdown */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Section <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Users className="w-4 h-4" />
-                  </div>
-                  <select
-                    value={formData.section}
-                    onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-                    className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
-                  >
-                    <option value="Section A">Section A</option>
-                    <option value="Section B">Section B</option>
-                    <option value="Section C">Section C</option>
-                  </select>
-                </div>
-              </div>
-
-              {/* Password */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    placeholder="e.g. Student#1234"
-                    className="w-full pl-9 pr-10 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700"
-                  >
-                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                  </button>
-                </div>
-              </div>
-
-              {/* Confirm Password */}
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                    <Lock className="w-4 h-4" />
-                  </div>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    placeholder="e.g. Student#1234"
-                    className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Password Criteria Notice */}
-            <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
-              <div className="flex items-center space-x-1.5 font-bold text-slate-800">
-                <Info className="w-3.5 h-3.5 text-amber-600" />
-                <span>Password Requirements</span>
-              </div>
-              <p>Must be <strong>at least 11 characters</strong> containing at least: 1 uppercase letter (A-Z), 1 lowercase letter (a-z), 1 number (0-9), and 1 special symbol (e.g. @, #, $, !).</p>
-            </div>
-
-            {/* OTP VERIFICATION MODAL / CONTAINER */}
-            {otpSent && !isEmailVerified && (
-              <div className="p-5 rounded-2xl bg-indigo-50 border-2 border-indigo-200 space-y-3 animate-fadeIn">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2 text-indigo-900 font-bold text-xs">
-                    <Mail className="w-4 h-4 text-indigo-600" />
-                    <span>Email OTP Verification Sent to {formData.email}</span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setUserEnteredOtp(generatedOtp)}
-                    className="text-[10px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded hover:bg-indigo-200"
-                  >
-                    Auto-fill OTP ({generatedOtp})
-                  </button>
-                </div>
-
-                <div className="text-xs text-slate-600">
-                  Enter the 6-digit OTP code sent to your email ID <strong>{formData.email}</strong> to verify your account:
-                </div>
-
-                {otpError && (
-                  <div className="p-2.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-semibold">
-                    {otpError}
-                  </div>
-                )}
-
-                <div className="flex items-center space-x-3">
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={userEnteredOtp}
-                    onChange={(e) => setUserEnteredOtp(e.target.value)}
-                    placeholder="Enter 6-digit OTP (e.g. 582914)"
-                    className="flex-1 px-4 py-2.5 text-sm font-mono font-bold tracking-widest text-center rounded-xl border border-indigo-300 bg-white text-indigo-950 focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleVerifyOtp}
-                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm flex items-center space-x-1.5 transition-all"
-                  >
-                    <CheckCheck className="w-4 h-4" />
-                    <span>Verify OTP & Proceed</span>
-                  </button>
-                </div>
-              </div>
+              </form>
             )}
 
-            {!otpSent && (
-              <button
-                type="submit"
-                className="w-full py-3.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center justify-center space-x-2 transition-all mt-4"
-              >
-                <Send className="w-4 h-4" />
-                <span>Send OTP to Email ({formData.email || 'Email ID'})</span>
-              </button>
+            {/* PHASE 3: SET PASSWORD & CONFIRM PASSWORD (UNLOCKED AFTER OTP VERIFICATION) */}
+            {subStep === 3 && (
+              <form onSubmit={handlePasswordSubmit} className="space-y-4 animate-fadeIn">
+                <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>Email Verified ({formData.email}) ✅</span>
+                  </div>
+                  <span className="text-[10px] text-emerald-700 font-mono">OTP Verified</span>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                  {/* Password */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Setup Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Lock className="w-4 h-4" />
+                      </div>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={formData.password}
+                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                        placeholder="e.g. Student#1234"
+                        className="w-full pl-9 pr-10 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700"
+                      >
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Confirm Password */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Confirm Password <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <Lock className="w-4 h-4" />
+                      </div>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={formData.confirmPassword}
+                        onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                        placeholder="e.g. Student#1234"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Password Criteria Notice */}
+                <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-600 space-y-1">
+                  <div className="flex items-center space-x-1.5 font-bold text-slate-800">
+                    <Info className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Password Requirements</span>
+                  </div>
+                  <p>Must be <strong>at least 11 characters</strong> containing at least: 1 uppercase letter (A-Z), 1 lowercase letter (a-z), 1 number (0-9), and 1 special symbol (e.g. @, #, $, !).</p>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-3.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center justify-center space-x-2 transition-all mt-4"
+                >
+                  <span>Set Password & Proceed to ₹50 Processing Fee</span>
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </form>
             )}
-          </form>
+
+          </div>
         )}
 
         {/* STEP 2: QR CODE PAYMENT FOR ₹50 WEB PROCESSING FEE */}
@@ -599,7 +639,7 @@ export default function StudentRegistrationPage() {
       </Suspense>
 
       <footer className="mt-8 pt-4 border-t border-slate-200 text-center text-xs text-slate-500">
-        Student Registration Portal — Instant Email OTP Verification & Web Processing Fee
+        Student Registration Portal — Sequential Email OTP Verification Before Password Setup
       </footer>
     </div>
   );
