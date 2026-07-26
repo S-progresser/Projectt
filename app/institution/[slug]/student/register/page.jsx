@@ -467,19 +467,7 @@ function StudentRegisterContent() {
                 </p>
               </div>
 
-              {/* Instant Auto-Verification Toggle */}
-              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
-                <div className="space-y-0.5">
-                  <span className="font-semibold text-slate-900">Instant Payment Verification</span>
-                  <p className="text-[10px] text-slate-500">Instantly activate student portal upon submitting UTR.</p>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={formData.autoApprove}
-                  onChange={(e) => setFormData({ ...formData, autoApprove: e.target.checked })}
-                  className="w-4 h-4 accent-amber-600 rounded cursor-pointer"
-                />
-              </div>
+
 
               {/* Buttons */}
               <div className="flex items-center space-x-3 pt-2">
