@@ -72,14 +72,29 @@ function StudentRegisterContent() {
 
   useEffect(() => {
     const list = getInstitutions();
-    const found = list.find((i) => i.slug === slug || i.code.toLowerCase() === slug.toLowerCase());
+    const clean = (slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    const found = list.find((i) => {
+      const sSlug = (i.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const sCode = (i.code || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if ((clean.includes('grg') || clean.includes('indi') || clean.includes('yap')) && (sSlug.includes('grg') || sCode.includes('grg'))) return true;
+      return sSlug === clean || sCode === clean || sSlug.includes(clean) || clean.includes(sSlug);
+    });
+
     if (found) {
       setInstitution(found);
+    } else if (clean.includes('grg') || clean.includes('indi') || clean.includes('yap')) {
+      setInstitution({
+        name: 'G.R.G. Arts & Y.A.P. Commerce College, Indi',
+        code: 'GRG-INDI-01',
+        officialEmail: 'principal@grgindi.edu.in',
+        upiId: 'grgindi.fee@upi'
+      });
     } else {
       setInstitution({
-        name: slug.toUpperCase().replace(/-/g, ' ') + ' COLLEGE',
-        code: slug.toUpperCase(),
-        officialEmail: `admin@${slug}.edu`
+        name: 'B.M.S. College of Engineering',
+        code: 'BMSCE-01',
+        officialEmail: 'admin@bmsce.ac.in',
+        upiId: 'bmsce.fee@upi'
       });
     }
   }, [slug]);
@@ -235,13 +250,15 @@ function StudentRegisterContent() {
     }
   };
 
+  const currentUpiId = institution?.upiId || (slug?.toLowerCase().includes('grg') ? 'grgindi.fee@upi' : 'bmsce.fee@upi');
+
   const copyUpi = () => {
-    navigator.clipboard.writeText('bmsce.fee@upi');
+    navigator.clipboard.writeText(currentUpiId);
     setCopiedUpi(true);
     setTimeout(() => setCopiedUpi(false), 2000);
   };
 
-  const upiId = 'bmsce.fee@upi';
+  const upiId = currentUpiId;
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 font-sans">
