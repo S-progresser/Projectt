@@ -31,7 +31,7 @@ export default function LandingPage() {
       description: 'Institutional administration workspace to manage faculty rosters, student enrollments, and academic departments.',
       icon: Building2,
       color: 'bg-teal-600 text-white',
-      link: '/institution/bmsce/admin/dashboard',
+      link: '/institution/grgarts/admin/dashboard',
       buttonText: 'Access Institution Portal',
     },
     {
@@ -40,16 +40,16 @@ export default function LandingPage() {
       description: 'Faculty portal for real-time attendance management, class rosters, and test mark evaluations.',
       icon: UserCheck,
       color: 'bg-emerald-600 text-white',
-      link: '/institution/bmsce/teacher/dashboard',
+      link: '/institution/grgarts/teacher/dashboard',
       buttonText: 'Access Faculty Portal',
     },
     {
       level: 'STUDENT',
       title: 'Student Portal',
-      description: 'Student academic dashboard for attendance tracking, course evaluations, and web portal registration.',
+      description: 'Student academic portal for attendance tracking, course evaluations, and web portal registration.',
       icon: GraduationCap,
       color: 'bg-amber-600 text-white',
-      link: '/institution/bmsce/student/register',
+      link: '/institution/grgarts/student/register',
       buttonText: 'Access Student Portal',
     },
   ];
@@ -73,7 +73,7 @@ export default function LandingPage() {
 
           <div className="flex items-center space-x-3">
             <Link
-              href="/institution/bmsce/student/register"
+              href="/institution/grgarts/student/register"
               className="hidden sm:inline-flex items-center space-x-2 text-xs bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-xl transition-all shadow-sm font-semibold"
             >
               <QrCode className="w-3.5 h-3.5" />
@@ -96,11 +96,11 @@ export default function LandingPage() {
         <div className="text-center space-y-3 max-w-3xl mx-auto mb-8">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>Unified Enterprise Academic Ecosystem</span>
+            <span>Unified Academic Ecosystem</span>
           </div>
           <h2 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight leading-tight">
-            Academic Management <br />
-            <span className="text-indigo-600">& Institution Portal Platform</span>
+            G.R.G. Arts & Y.A.P. Commerce College, Indi <br />
+            <span className="text-indigo-600">Academic Portal Platform</span>
           </h2>
           <p className="text-slate-600 text-sm md:text-base">
             Comprehensive multi-tier platform connecting Superadmin management, Institution administration, Faculty grading, and Student academic tracking.
@@ -109,23 +109,15 @@ export default function LandingPage() {
 
         {/* Quick Access Institutions Bar */}
         <div className="mb-10 max-w-4xl mx-auto p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold">
-          <span className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">Select Active Institution:</span>
+          <span className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">Active Institution:</span>
           
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/institution/grgarts/student/register"
-              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-sm flex items-center space-x-1.5"
+              className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold transition-all shadow-sm flex items-center space-x-1.5"
             >
               <GraduationCap className="w-4 h-4" />
-              <span>G.R.G. Arts & Y.A.P. Commerce College, Indi — Student Registration</span>
-            </Link>
-
-            <Link
-              href="/institution/bmsce/student/register"
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold transition-all shadow-sm flex items-center space-x-1.5"
-            >
-              <Building2 className="w-4 h-4" />
-              <span>B.M.S. College of Engineering — Student Registration</span>
+              <span>G.R.G. Arts & Y.A.P. Commerce College, Indi — Student Portal Registration</span>
             </Link>
           </div>
         </div>

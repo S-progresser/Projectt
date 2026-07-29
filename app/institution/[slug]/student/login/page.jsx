@@ -25,7 +25,7 @@ function StudentLoginContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const slug = params?.slug || 'bmsce';
+  const slug = params?.slug || 'grgarts';
 
   const [institution, setInstitution] = useState(null);
   const [stream, setStream] = useState('B.A');
@@ -49,15 +49,10 @@ function StudentLoginContent() {
 
     if (found) {
       setInstitution(found);
-    } else if (clean.includes('grg') || clean.includes('indi') || clean.includes('yap')) {
+    } else {
       setInstitution({
         name: 'G.R.G. Arts & Y.A.P. Commerce College, Indi',
         code: 'GRG-INDI-01'
-      });
-    } else {
-      setInstitution({
-        name: 'B.M.S. College of Engineering',
-        code: 'BMSCE-01'
       });
     }
 

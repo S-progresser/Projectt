@@ -21,7 +21,7 @@ import { updateStudentGradeByTeacher } from '@/lib/systemSync';
 export default function TeacherPortalDashboard() {
   const params = useParams();
   const router = useRouter();
-  const slug = params?.slug || 'bmsce';
+  const slug = params?.slug || 'grgarts';
 
   const [teacher, setTeacher] = useState(null);
   const [institution, setInstitution] = useState(null);

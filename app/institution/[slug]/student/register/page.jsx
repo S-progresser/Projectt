@@ -32,7 +32,7 @@ import { registerStudent } from '@/lib/studentsStore';
 function StudentRegisterContent() {
   const params = useParams();
   const router = useRouter();
-  const slug = params?.slug || 'bmsce';
+  const slug = params?.slug || 'grgarts';
 
   const [institution, setInstitution] = useState(null);
   const [step, setStep] = useState(1); // 1: Profile & OTP & Password Setup, 2: ₹50 QR Fee

@@ -26,7 +26,7 @@ function InstitutionLoginContent() {
   const params = useParams();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const slug = params?.slug || 'bmsce';
+  const slug = params?.slug || 'grgarts';
 
   const [activeTab, setActiveTab] = useState('TEACHER'); // 'TEACHER' or 'ADMIN'
   const [institution, setInstitution] = useState(null);

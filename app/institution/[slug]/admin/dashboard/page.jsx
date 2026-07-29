@@ -24,7 +24,7 @@ import { getStudentsByInstitution } from '@/lib/studentsStore';
 export default function InstitutionAdminDashboard() {
   const params = useParams();
   const router = useRouter();
-  const slug = params?.slug || 'bmsce';
+  const slug = params?.slug || 'grgarts';
 
   const [activeTab, setActiveTab] = useState('STUDENTS'); // 'STUDENTS', 'FACULTY'
   const [institution, setInstitution] = useState(null);
