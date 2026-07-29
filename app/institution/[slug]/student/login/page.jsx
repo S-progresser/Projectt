@@ -16,7 +16,7 @@ import {
   UserPlus,
   KeyRound,
   CreditCard,
-  Users
+  BookOpen
 } from 'lucide-react';
 import { getInstitutions } from '@/lib/institutionsStore';
 import { verifyStudentLogin, getStudentsByInstitution } from '@/lib/studentsStore';
@@ -28,18 +28,38 @@ function StudentLoginContent() {
   const slug = params?.slug || 'bmsce';
 
   const [institution, setInstitution] = useState(null);
-  const [section, setSection] = useState('Section A');
-  const [rollNo, setRollNo] = useState('1BM23CS001');
-  const [password, setPassword] = useState('Student#123');
+  const [stream, setStream] = useState('B.A');
+  const [sem, setSem] = useState('SEM 04');
+  const [rollNo, setRollNo] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   useEffect(() => {
+    const clean = (slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     const list = getInstitutions();
-    const found = list.find((i) => i.slug === slug || i.code.toLowerCase() === slug.toLowerCase());
-    setInstitution(found || { name: `${slug.toUpperCase()} College`, code: slug.toUpperCase() });
+    const found = list.find((i) => {
+      const sSlug = (i.slug || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const sCode = (i.code || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+      if ((clean.includes('grg') || clean.includes('indi') || clean.includes('yap')) && (sSlug.includes('grg') || sCode.includes('grg'))) return true;
+      return sSlug === clean || sCode === clean || sSlug.includes(clean) || clean.includes(sSlug);
+    });
+
+    if (found) {
+      setInstitution(found);
+    } else if (clean.includes('grg') || clean.includes('indi') || clean.includes('yap')) {
+      setInstitution({
+        name: 'G.R.G. Arts & Y.A.P. Commerce College, Indi',
+        code: 'GRG-INDI-01'
+      });
+    } else {
+      setInstitution({
+        name: 'B.M.S. College of Engineering',
+        code: 'BMSCE-01'
+      });
+    }
 
     if (searchParams.get('registered') === 'true') {
       setSuccessMessage('Payment verified & registration complete! Log into your Student Portal.');
@@ -50,13 +70,15 @@ function StudentLoginContent() {
     const students = getStudentsByInstitution(slug);
     const validStudent = students.find(s => s.paymentStatus === 'PAID') || students[0];
     if (validStudent) {
-      setSection(validStudent.section || 'Section A');
-      setRollNo(validStudent.rollNo || '1BM23CS001');
-      setPassword(validStudent.password || 'Student#123');
+      setStream(validStudent.stream || validStudent.department || 'B.A');
+      setSem(validStudent.semester || 'SEM 04');
+      setRollNo(validStudent.rollNo || '1BM24CB050');
+      setPassword(validStudent.password || 'Student#1234');
     } else {
-      setSection('Section A');
-      setRollNo('1BM23CS001');
-      setPassword('Student#123');
+      setStream('B.A');
+      setSem('SEM 04');
+      setRollNo('1BM24CB050');
+      setPassword('Student#1234');
     }
     setErrorMessage('');
   };
@@ -66,7 +88,8 @@ function StudentLoginContent() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!section) return setErrorMessage('Section is required.');
+    if (!stream) return setErrorMessage('Stream / Program is required.');
+    if (!sem) return setErrorMessage('Semester is required.');
     if (!rollNo.trim()) return setErrorMessage('Roll Number is required.');
     if (!password.trim()) return setErrorMessage('Password is required.');
 
@@ -74,7 +97,7 @@ function StudentLoginContent() {
 
     setTimeout(() => {
       setLoading(false);
-      const result = verifyStudentLogin(slug, section, rollNo, password);
+      const result = verifyStudentLogin(slug, sem, rollNo, password, stream);
 
       if (!result.success) {
         setErrorMessage(result.error);
@@ -106,7 +129,6 @@ function StudentLoginContent() {
       {/* Card */}
       <div className="bg-white rounded-2xl p-6 md:p-8 border border-slate-200 shadow-sm relative">
 
-
         {errorMessage && (
           <div className="mb-5 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start space-x-2">
             <AlertCircle className="w-4 h-4 text-red-600 mt-0.5 flex-shrink-0" />
@@ -122,24 +144,50 @@ function StudentLoginContent() {
         )}
 
         <form onSubmit={handleLoginSubmit} className="space-y-4">
-          
-          {/* 1. Section */}
+
+          {/* 1. Stream / Program */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Section <span className="text-red-500">*</span>
+              Stream / Program <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
-                <Users className="w-4 h-4" />
+                <GraduationCap className="w-4 h-4" />
               </div>
               <select
-                value={section}
-                onChange={(e) => setSection(e.target.value)}
+                value={stream}
+                onChange={(e) => setStream(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
               >
-                <option value="Section A">Section A</option>
-                <option value="Section B">Section B</option>
-                <option value="Section C">Section C</option>
+                <option value="B.A">B.A (Bachelor of Arts)</option>
+                <option value="B.Com">B.Com (Bachelor of Commerce)</option>
+                <option value="B.Sc">B.Sc (Bachelor of Science)</option>
+                <option value="B.B.A">B.B.A (Bachelor of Business Administration)</option>
+                <option value="B.C.A">B.C.A (Bachelor of Computer Applications)</option>
+              </select>
+            </div>
+          </div>
+          
+          {/* 2. Semester / Sem */}
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+              Semester / Sem <span className="text-red-500">*</span>
+            </label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <select
+                value={sem}
+                onChange={(e) => setSem(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500"
+              >
+                <option value="SEM 01">SEM 01 (Semester 1)</option>
+                <option value="SEM 02">SEM 02 (Semester 2)</option>
+                <option value="SEM 03">SEM 03 (Semester 3)</option>
+                <option value="SEM 04">SEM 04 (Semester 4)</option>
+                <option value="SEM 05">SEM 05 (Semester 5)</option>
+                <option value="SEM 06">SEM 06 (Semester 6)</option>
               </select>
             </div>
           </div>
@@ -147,7 +195,7 @@ function StudentLoginContent() {
           {/* 2. Roll No */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              Roll No <span className="text-red-500">*</span>
+              USN / Register Roll No <span className="text-red-500">*</span>
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
@@ -158,7 +206,7 @@ function StudentLoginContent() {
                 required
                 value={rollNo}
                 onChange={(e) => setRollNo(e.target.value.toUpperCase())}
-                placeholder="e.g. 1BM23CS001"
+                placeholder="e.g. 1BM24CB050 or GRG24BA015"
                 className="w-full pl-10 pr-4 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-amber-500"
               />
             </div>
@@ -209,7 +257,7 @@ function StudentLoginContent() {
 
         <div className="mt-5 pt-4 border-t border-slate-200 text-center">
           <p className="text-xs text-slate-500">
-            New Student at {institution?.name}?
+            New Student at {institution?.name || 'G.R.G. Arts & Y.A.P. Commerce College, Indi'}?
           </p>
           <Link
             href={`/institution/${slug}/student/register`}

@@ -22,7 +22,9 @@ import {
   Lock,
   Info,
   Send,
-  CheckCheck
+  CheckCheck,
+  Receipt,
+  CreditCard
 } from 'lucide-react';
 import { getInstitutions } from '@/lib/institutionsStore';
 import { registerStudent } from '@/lib/studentsStore';
@@ -38,8 +40,9 @@ function StudentRegisterContent() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    studentClass: 'Class 6',
-    section: 'Section A',
+    stream: 'B.A',
+    studentClass: 'SEM 04',
+    section: 'Sec A',
     password: '',
     confirmPassword: '',
     rollNo: '',
@@ -55,6 +58,7 @@ function StudentRegisterContent() {
   // subStep 3: Setup Password & Confirm Password (Unlocked after OTP verified)
   const [subStep, setSubStep] = useState(1);
 
+  const [sendingOtp, setSendingOtp] = useState(false);
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [userEnteredOtp, setUserEnteredOtp] = useState('');
   const [isEmailVerified, setIsEmailVerified] = useState(false);
@@ -99,23 +103,51 @@ function StudentRegisterContent() {
     return null;
   };
 
+  const [emailPreviewUrl, setEmailPreviewUrl] = useState(null);
+
   // Phase 1: Send OTP to Email
-  const handleSendOtp = (e) => {
-    e.preventDefault();
+  const handleSendOtp = async (e) => {
+    if (e) e.preventDefault();
     setErrorMessage('');
     setOtpError('');
+    setEmailPreviewUrl(null);
 
     if (!formData.name.trim()) return setErrorMessage('Full Name is required.');
     if (!formData.email.trim()) return setErrorMessage('Email ID is required.');
     if (!/\S+@\S+\.\S+/.test(formData.email)) return setErrorMessage('Please enter a valid Email ID.');
-    if (!formData.studentClass.trim()) return setErrorMessage('Class is required.');
-    if (!formData.section.trim()) return setErrorMessage('Section is required.');
+    if (!formData.rollNo.trim()) return setErrorMessage('USN / Register Roll No is required.');
 
+    setSendingOtp(true);
     // Generate 6-digit random OTP
     const code = Math.floor(100000 + Math.random() * 900000).toString();
     setGeneratedOtp(code);
-    setSubStep(2);
-    setSuccessMessage(`OTP Code sent to ${formData.email}`);
+
+    try {
+      const res = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.email,
+          otp: code,
+          name: formData.name
+        })
+      });
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        setErrorMessage(data.error || 'Failed to send OTP to email.');
+      } else {
+        setSubStep(2);
+        if (data.previewUrl) {
+          setEmailPreviewUrl(data.previewUrl);
+        }
+        setSuccessMessage(`OTP Code sent to ${formData.email}. Please check your inbox or spam folder.`);
+      }
+    } catch (err) {
+      setErrorMessage('Failed to send OTP code to email. Please check your connection.');
+    } finally {
+      setSendingOtp(false);
+    }
   };
 
   // Phase 2: Verify OTP Code
@@ -328,46 +360,69 @@ function StudentRegisterContent() {
                     </div>
                   </div>
 
-                  {/* Class Dropdown */}
+                  {/* USN / Register Roll No */}
                   <div>
                     <label className="block font-semibold text-slate-700 mb-1">
-                      Class <span className="text-red-500">*</span>
+                      USN / Register Roll No <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <CreditCard className="w-4 h-4" />
+                      </div>
+                      <input
+                        type="text"
+                        required
+                        value={formData.rollNo}
+                        onChange={(e) => setFormData({ ...formData, rollNo: e.target.value.toUpperCase() })}
+                        placeholder="e.g. 1BM24CB050 or GRG24BA015"
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 font-mono uppercase focus:outline-none focus:ring-2 focus:ring-amber-500"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Stream Dropdown */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Stream / Program <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                        <GraduationCap className="w-4 h-4" />
+                      </div>
+                      <select
+                        value={formData.stream || 'B.A'}
+                        onChange={(e) => setFormData({ ...formData, stream: e.target.value })}
+                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
+                      >
+                        <option value="B.A">B.A (Bachelor of Arts)</option>
+                        <option value="B.Com">B.Com (Bachelor of Commerce)</option>
+                        <option value="B.Sc">B.Sc (Bachelor of Science)</option>
+                        <option value="B.B.A">B.B.A (Bachelor of Business Administration)</option>
+                        <option value="B.C.A">B.C.A (Bachelor of Computer Applications)</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Semester Dropdown */}
+                  <div>
+                    <label className="block font-semibold text-slate-700 mb-1">
+                      Semester / Sem <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <BookOpen className="w-4 h-4" />
                       </div>
                       <select
-                        value={formData.studentClass}
+                        value={formData.studentClass || 'SEM 04'}
                         onChange={(e) => setFormData({ ...formData, studentClass: e.target.value })}
                         className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
                       >
-                        <option value="Class 6">Class 6</option>
-                        <option value="Class 7">Class 7</option>
-                        <option value="Class 8">Class 8</option>
-                        <option value="Class 9">Class 9</option>
-                        <option value="Class 10">Class 10</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Section Dropdown */}
-                  <div>
-                    <label className="block font-semibold text-slate-700 mb-1">
-                      Section <span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
-                        <Users className="w-4 h-4" />
-                      </div>
-                      <select
-                        value={formData.section}
-                        onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-                        className="w-full pl-9 pr-3 py-2.5 text-xs rounded-xl border border-slate-300 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 font-medium"
-                      >
-                        <option value="Section A">Section A</option>
-                        <option value="Section B">Section B</option>
-                        <option value="Section C">Section C</option>
+                        <option value="SEM 01">SEM 01 (Semester 1)</option>
+                        <option value="SEM 02">SEM 02 (Semester 2)</option>
+                        <option value="SEM 03">SEM 03 (Semester 3)</option>
+                        <option value="SEM 04">SEM 04 (Semester 4)</option>
+                        <option value="SEM 05">SEM 05 (Semester 5)</option>
+                        <option value="SEM 06">SEM 06 (Semester 6)</option>
                       </select>
                     </div>
                   </div>
@@ -375,10 +430,11 @@ function StudentRegisterContent() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center justify-center space-x-2 transition-all mt-4"
+                  disabled={sendingOtp}
+                  className="w-full py-3.5 px-4 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs shadow-sm flex items-center justify-center space-x-2 transition-all mt-4 disabled:opacity-60"
                 >
                   <Send className="w-4 h-4" />
-                  <span>Send OTP Code to Email ({formData.email || 'Email ID'})</span>
+                  <span>{sendingOtp ? 'Sending OTP to Email...' : `Send OTP Code to Email (${formData.email || 'Email ID'})`}</span>
                 </button>
               </form>
             )}
@@ -394,16 +450,47 @@ function StudentRegisterContent() {
                     </div>
                     <button
                       type="button"
-                      onClick={() => setUserEnteredOtp(generatedOtp)}
-                      className="text-[10px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-300 px-2 py-0.5 rounded hover:bg-indigo-200"
+                      disabled={sendingOtp}
+                      onClick={() => handleSendOtp()}
+                      className="text-[10px] font-bold text-indigo-700 bg-indigo-100 border border-indigo-300 px-2.5 py-1 rounded hover:bg-indigo-200 transition-colors disabled:opacity-50 flex items-center space-x-1"
                     >
-                      Auto-fill OTP ({generatedOtp})
+                      <span>{sendingOtp ? 'Resending...' : 'Resend OTP to Email'}</span>
                     </button>
                   </div>
 
                   <div className="text-xs text-slate-600">
                     Enter the 6-digit OTP code sent to <strong>{formData.email}</strong> to verify your email before setting up your password:
                   </div>
+
+                  {emailPreviewUrl && (
+                    <div className="p-3 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs space-y-2">
+                      <div className="flex items-center justify-between font-bold">
+                        <span>📧 OTP Dispatched to {formData.email}</span>
+                        <a
+                          href={emailPreviewUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="underline text-amber-700 hover:text-amber-900"
+                        >
+                          View Email Inbox &rarr;
+                        </a>
+                      </div>
+                      {generatedOtp && (
+                        <div className="flex items-center justify-between pt-1 border-t border-amber-200">
+                          <span className="font-mono text-xs">
+                            Verification OTP Code: <strong className="text-amber-900 font-extrabold tracking-widest text-sm bg-white px-2 py-0.5 rounded border border-amber-300">{generatedOtp}</strong>
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => setUserEnteredOtp(generatedOtp)}
+                            className="px-2.5 py-1 text-[11px] font-bold text-white bg-amber-600 hover:bg-amber-700 rounded-lg shadow-sm transition-all"
+                          >
+                            ⚡ Auto-Fill Code
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {otpError && (
                     <div className="p-2.5 rounded-lg bg-red-50 text-red-700 border border-red-200 text-xs font-semibold">

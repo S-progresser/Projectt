@@ -214,18 +214,19 @@ export default function InstitutionAdminDashboard() {
             <div className="flex flex-wrap items-center gap-2 text-xs font-semibold w-full md:w-auto">
               <div className="flex items-center space-x-1.5 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
                 <Filter className="w-3.5 h-3.5 text-slate-400" />
-                <span className="text-slate-600">Class:</span>
+                <span className="text-slate-600">Semester:</span>
                 <select
                   value={classFilter}
                   onChange={(e) => setClassFilter(e.target.value)}
                   className="bg-transparent font-bold text-slate-900 focus:outline-none"
                 >
-                  <option value="ALL">All Classes (6 to 10)</option>
-                  <option value="Class 6">Class 6</option>
-                  <option value="Class 7">Class 7</option>
-                  <option value="Class 8">Class 8</option>
-                  <option value="Class 9">Class 9</option>
-                  <option value="Class 10">Class 10</option>
+                  <option value="ALL">All Semesters (1 to 6)</option>
+                  <option value="SEM 01">SEM 01</option>
+                  <option value="SEM 02">SEM 02</option>
+                  <option value="SEM 03">SEM 03</option>
+                  <option value="SEM 04">SEM 04</option>
+                  <option value="SEM 05">SEM 05</option>
+                  <option value="SEM 06">SEM 06</option>
                 </select>
               </div>
 

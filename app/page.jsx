@@ -49,7 +49,7 @@ export default function LandingPage() {
       description: 'Student academic dashboard for attendance tracking, course evaluations, and web portal registration.',
       icon: GraduationCap,
       color: 'bg-amber-600 text-white',
-      link: '/institution/bmsce/student/dashboard',
+      link: '/institution/bmsce/student/register',
       buttonText: 'Access Student Portal',
     },
   ];
@@ -93,7 +93,7 @@ export default function LandingPage() {
 
       {/* Main Hero */}
       <main className="max-w-7xl mx-auto px-6 py-12 flex-1 flex flex-col justify-center">
-        <div className="text-center space-y-3 max-w-3xl mx-auto mb-12">
+        <div className="text-center space-y-3 max-w-3xl mx-auto mb-8">
           <div className="inline-flex items-center space-x-2 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-700 text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Unified Enterprise Academic Ecosystem</span>
@@ -105,6 +105,29 @@ export default function LandingPage() {
           <p className="text-slate-600 text-sm md:text-base">
             Comprehensive multi-tier platform connecting Superadmin management, Institution administration, Faculty grading, and Student academic tracking.
           </p>
+        </div>
+
+        {/* Quick Access Institutions Bar */}
+        <div className="mb-10 max-w-4xl mx-auto p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4 text-xs font-semibold">
+          <span className="text-slate-700 font-bold uppercase tracking-wider text-[11px]">Select Active Institution:</span>
+          
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/institution/grgarts/student/register"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold transition-all shadow-sm flex items-center space-x-1.5"
+            >
+              <GraduationCap className="w-4 h-4" />
+              <span>G.R.G. Arts & Y.A.P. Commerce College, Indi — Student Registration</span>
+            </Link>
+
+            <Link
+              href="/institution/bmsce/student/register"
+              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 text-white font-bold transition-all shadow-sm flex items-center space-x-1.5"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>B.M.S. College of Engineering — Student Registration</span>
+            </Link>
+          </div>
         </div>
 
         {/* Tiers Grid */}
